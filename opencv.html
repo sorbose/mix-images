@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width， initial-scale=1.0">
+    <title>Hello OpenCV.js</title>
+    <style>
+        img {
+            width: 90%;
+        }
+    </style>
+    <script></script>
+</head>
+
+<body>
+    <h2>Hello OpenCV.js</h2>
+    <p id="status">OpenCV.js is loading...</p>
+    <div>
+        <div class="inputoutput">
+            <img id="imageSrc" alt="No Original Image" />
+            <div class="caption">原始图片 <input type="file" id="o_fileInput" name="file" /></div>
+        </div>
+        <div class="inputoutput">
+            <img id="imageBg" alt="No Background Image" />
+            <!-- <canvas id="imageBgShow"></canvas> -->
+            <div class="caption">背景图片 <input type="file" id="b_fileInput" name="file" /></div>
+        </div>
+        <input style="width: 90%;" id="alpha" type="range" value="0.75" max="1" min="0" step="0.01" /><br/>
+        <button onclick="add_img()">相加！</button>
+        <div class="inputoutput">
+            <canvas hidden id="canvasOutput"></canvas>
+            <div class="caption">Output</div>
+            <img id="imgOutPut" alt="结果在这里" />
+        </div>
+    </div>
+    <script type="text/javascript">
+        let bgImg = document.getElementById('imageBg');
+        let ogImg = document.getElementById('imageSrc');
+        let ogImgEle = document.getElementById('o_fileInput');
+        let bgImgEle = document.getElementById('b_fileInput');
+        bgImgEle.addEventListener('change', (e) => {
+            bgImg.src = URL.createObjectURL(e.target.files[0]);
+        }, false);
+        // bgImg.onload = function() {
+        //     let bgImgEleMat = cv.imread(bgImg);
+        //     cv.imshow('imageBgShow', bgImgEleMat);
+        //     bgImgEleMat.delete();
+        // };
+        ogImgEle.addEventListener('change', (e) => {
+            ogImg.src = URL.createObjectURL(e.target.files[0]);
+        }, false);
+
+        function onOpenCvReady() {
+            document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+        }
+
+        function add_img() {
+            const og_img = cv.imread(ogImg);
+            const bg_img = cv.imread(bgImg);
+            const bg_rs_mat = new cv.Mat(og_img.rows, og_img.cols, og_img.type());
+            cv.resize(bg_img, bg_rs_mat, bg_rs_mat.size())
+            const addWeightedMat = new cv.Mat(og_img.rows, og_img.cols, og_img.type());
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            const beta = 1 - alpha;
+            const gamma = 0;
+            cv.addWeighted(og_img, alpha, bg_rs_mat, beta, gamma, addWeightedMat);
+            cv.imshow('canvasOutput', addWeightedMat);
+            toDataURL("image/jpeg");
+        }
+
+        function toDataURL(mime) {
+            var canvas = document.getElementById("canvasOutput");
+            var image = document.getElementById("imgOutPut");
+            image.src = canvas.toDataURL(mime);
+        }
+    </script>
+    <script async src="opencv-3.4.17.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script>
+    </script>
+</body>
+
+</html>
